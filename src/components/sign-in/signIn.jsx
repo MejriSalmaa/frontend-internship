@@ -17,9 +17,37 @@ export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Reset errors
+    setEmailError('');
+    setPasswordError('');
+
+    let valid = true;
+
+    if (!validateEmail(email)) {
+      setEmailError('Invalid email address');
+      valid = false;
+    }
+
+    if (password.length < 4) {
+      setPasswordError('Password must be at least 4 characters');
+      valid = false;
+    }
+
+    if (!valid) {
+      return;
+    }
+
     const credentials = { email, password };
 
     try {
@@ -69,6 +97,8 @@ export default function SignIn() {
                 autoFocus
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                error={!!emailError}
+                helperText={emailError}
                 sx={{ borderRadius: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
               <TextField
@@ -82,6 +112,8 @@ export default function SignIn() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                error={!!passwordError}
+                helperText={passwordError}
                 sx={{ borderRadius: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 2 }}>

@@ -21,9 +21,49 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [picture, setPicture] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateUsername = (username) => {
+    const usernameRegex = /^[A-Za-z]+$/;
+    return usernameRegex.test(username);
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // Reset errors
+    setUsernameError('');
+    setEmailError('');
+    setPasswordError('');
+
+    let valid = true;
+
+    if (!validateUsername(username)) {
+      setUsernameError('Username must be alphabetic and cannot be empty');
+      valid = false;
+    }
+
+    if (!validateEmail(email)) {
+      setEmailError('Invalid email address');
+      valid = false;
+    }
+
+    if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      valid = false;
+    }
+
+    if (!valid) {
+      return;
+    }
+
     const formData = {
       username,
       email,
@@ -35,7 +75,6 @@ export default function SignUp() {
       console.log('Picture file:', picture.name);
     }
 
-    // Assuming you have an endpoint to handle the sign-up request
     const endpoint = 'http://localhost:3000/users';
 
     try {
@@ -97,6 +136,8 @@ export default function SignUp() {
                 autoFocus
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                error={!!usernameError}
+                helperText={usernameError}
               />
               <TextField
                 margin="dense" // Reduced margin
@@ -108,6 +149,8 @@ export default function SignUp() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                error={!!emailError}
+                helperText={emailError}
               />
               <TextField
                 margin="dense" // Reduced margin
@@ -120,6 +163,8 @@ export default function SignUp() {
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                error={!!passwordError}
+                helperText={passwordError}
               />
               <IconButton
                 color="primary"
