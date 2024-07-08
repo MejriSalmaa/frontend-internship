@@ -19,6 +19,7 @@ export default function SignIn() {
   const [rememberMe, setRememberMe] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [invalidEmailOrPassword, setInvalidEmailOrPassword] = useState(false);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,6 +32,7 @@ export default function SignIn() {
     // Reset errors
     setEmailError('');
     setPasswordError('');
+    setInvalidEmailOrPassword(false);
 
     let valid = true;
 
@@ -63,6 +65,11 @@ export default function SignIn() {
         localStorage.setItem('token', data.token); // Save token
         window.location.href = '/dashboard'; // Redirect to dashboard
       } else {
+        // Handle different error scenarios
+        const errorData = await response.json();
+        if (errorData.message === 'User not found' || errorData.message === 'Incorrect password') {
+          setInvalidEmailOrPassword(true);
+        }
         console.error('Sign in failed');
       }
     } catch (error) {
@@ -97,7 +104,7 @@ export default function SignIn() {
                 autoFocus
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                error={!!emailError}
+                error={!!emailError || invalidEmailOrPassword}
                 helperText={emailError}
                 sx={{ borderRadius: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
@@ -112,7 +119,7 @@ export default function SignIn() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                error={!!passwordError}
+                error={!!passwordError || invalidEmailOrPassword}
                 helperText={passwordError}
                 sx={{ borderRadius: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />

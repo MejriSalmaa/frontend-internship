@@ -55,8 +55,8 @@ export default function SignUp() {
       valid = false;
     }
 
-    if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+    if (password.length < 4) {
+      setPasswordError('Password must be at least 4 characters');
       valid = false;
     }
 
@@ -92,7 +92,14 @@ export default function SignUp() {
 
       const result = await response.json();
       console.log('Success:', result);
-      // Handle success, e.g., redirecting the user or showing a success message
+
+      // Clear form
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      setPicture(null);
+      setAvatarPreview('');
+      // Optionally, you can redirect or show a success message here
     } catch (error) {
       console.error('Error:', error);
       // Handle errors, e.g., showing an error message to the user
