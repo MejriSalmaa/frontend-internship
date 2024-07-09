@@ -147,7 +147,7 @@ export default function SignIn() {
               </Button>
               <Stack spacing={1} alignItems="center">
                 <Typography variant="body2">
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <Link component={RouterLink} to="/sign-up" variant="body2" underline="hover">
                     Sign Up
                   </Link>

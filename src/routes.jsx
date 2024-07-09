@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
-import LandingPage from './components/layouts/landingPage';
-import SignIn from './components/sign-in/signIn'; 
-import SignUP from './components/sign-up/signUp'; 
+import LandingPage from './pages/landingPage';
+import SignIn from './components/SignIn/index'; 
+import SignUP from './components/SignUp/index'; 
 
 const AppRoutes = () => {
   return (

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import Header from './Header'; 
-import Footer from './Footer';
-import SignIn from '../sign-in/signIn';
-import SignUp from '../sign-up/signUp';
+import Header from '../layouts/Header'; 
+import Footer from '../layouts/Footer';
+import SignIn from '../components/SignIn/index';
+import SignUp from '../components/SignUp/index';
 
 const LandingPage = () => {
   const [showSignIn, setShowSignIn] = useState(false);
