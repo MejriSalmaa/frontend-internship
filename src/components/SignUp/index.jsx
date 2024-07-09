@@ -12,6 +12,7 @@ import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import {validateEmail,validateUsername} from '../../utils/validation'
 
 const theme = createTheme();
 
@@ -25,15 +26,7 @@ export default function SignUp() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validateUsername = (username) => {
-    const usernameRegex = /^[A-Za-z]+$/;
-    return usernameRegex.test(username);
-  };
+ 
 
   const handleSubmit = async (event) => {
     event.preventDefault();

@@ -10,6 +10,7 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Stack from '@mui/material/Stack';
+import {validateEmail} from '../../utils/validation'
 
 const theme = createTheme();
 
@@ -20,11 +21,6 @@ export default function SignIn() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [invalidEmailOrPassword, setInvalidEmailOrPassword] = useState(false);
-
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
