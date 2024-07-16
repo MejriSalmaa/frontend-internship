@@ -3,7 +3,6 @@ import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
 import SignIn from '../components/SignIn/index';
 import SignUp from '../components/SignUp/index';
-
 const LandingPage = () => {
   const [showSignIn, setShowSignIn] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);

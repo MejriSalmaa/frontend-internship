@@ -49,7 +49,7 @@ export default function SignIn() {
     const credentials = { email, password };
 
     try {
-      const response = await fetch('http://localhost:3000/users/login', {
+      const response = await fetch('http://localhost:3000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,8 +58,10 @@ export default function SignIn() {
       });
       if (response.ok) {
         const data = await response.json();
-        localStorage.setItem('token', data.token); // Save token
-        window.location.href = '/dashboard'; // Redirect to dashboard
+        localStorage.setItem('access_token', data.access_token);// Store the token in local storage
+        alert('Login successful');
+
+        window.location.href = '/authenticatedPage'; // Redirect to authenticatedPage
       } else {
         // Handle different error scenarios
         const errorData = await response.json();

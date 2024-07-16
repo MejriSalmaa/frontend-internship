@@ -66,4 +66,5 @@ export default function ButtonAppBar({ onSignInClick, onSignUpClick }) {
       </AppBar>
     </Box>
   );
+  
 }

@@ -12,7 +12,7 @@ import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
-import {validateEmail,validateUsername} from '../../utils/validation'
+import { validateEmail, validateUsername } from '../../utils/validation';
 
 const theme = createTheme();
 
@@ -25,8 +25,6 @@ export default function SignUp() {
   const [usernameError, setUsernameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-
- 
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -57,26 +55,20 @@ export default function SignUp() {
       return;
     }
 
-    const formData = {
-      username,
-      email,
-      password,
-    };
-
-    console.log(formData);
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('email', email);
+    formData.append('password', password);
     if (picture) {
-      console.log('Picture file:', picture.name);
+      formData.append('picture', picture);
     }
 
-    const endpoint = 'http://localhost:3000/users';
+    const endpoint = 'http://localhost:3000/auth/register';
 
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: formData,
       });
 
       if (!response.ok) {
