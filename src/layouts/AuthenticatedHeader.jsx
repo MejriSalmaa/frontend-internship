@@ -12,6 +12,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import MailIcon from '@mui/icons-material/Mail';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 
 const logoStyle = {
   width: '50px',
@@ -22,6 +23,7 @@ const logoStyle = {
 export default function AuthenticatedHeader({ userProfile }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
+  const navigate = useNavigate();  // Initialize useNavigate hook
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -42,17 +44,21 @@ export default function AuthenticatedHeader({ userProfile }) {
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
+
   const handleLogout = async () => {
     try {
+      const token = localStorage.getItem('access_token');
+
       const response = await fetch('http://localhost:3000/auth/logout', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`
         },
+        credentials: 'include',
       });
       if (response.ok) {
-        localStorage.removeItem('token'); // Remove token from local storage
-        history.push('/'); // Redirect to login or home page
+        localStorage.removeItem('access_token'); // Remove token from local storage
+        navigate('/'); // Redirect to login or home page
       } else {
         console.error('Logout failed');
         // Handle logout failure
@@ -212,6 +218,7 @@ export default function AuthenticatedHeader({ userProfile }) {
     </Box>
   );
 }
+
 AuthenticatedHeader.propTypes = {
   userProfile: PropTypes.object.isRequired,
 };

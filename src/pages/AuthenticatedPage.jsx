@@ -7,7 +7,7 @@ function AuthenticatedPage() {
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
+      const token = localStorage.getItem('access_token'); // Assuming the token is stored in localStorage
       try {
         const response = await fetch('http://localhost:3000/auth/profile', { // Ensure the correct URL
           method: 'GET',
@@ -49,14 +49,7 @@ function AuthenticatedPage() {
     >
       {userProfile && <AuthenticatedHeader userProfile={userProfile} />}
       <Calendar />
-      {/* Display user profile information */}
-      {userProfile && (
-        <div>
-          <h2>Welcome, {userProfile.email}</h2>
-          {/* Display other user profile information as needed */}
-        </div>
-      )}
-      {/* Other content of your authenticated page goes here */}
+     
     </div>
   );
 }
