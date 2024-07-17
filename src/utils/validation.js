@@ -34,8 +34,14 @@ export const validateStartEndDate = (startDate, endDate) => {
 };
 
 export const validateParticipants = (participants) => {
-  return participants.trim() !== '';
+  if (typeof participants === 'string') {
+    return participants.trim() !== '';
+  } else if (Array.isArray(participants)) {
+    return participants.length > 0 && participants.every(participant => typeof participant === 'string' && participant.trim() !== '');
+  }
+  return false;
 };
+
 export const validateCategory = (category) => {
   return category.trim() !== '';
 };
