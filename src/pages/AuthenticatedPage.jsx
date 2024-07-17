@@ -49,7 +49,6 @@ function AuthenticatedPage() {
     >
       {userProfile && <AuthenticatedHeader userProfile={userProfile} />}
       <Calendar />
-     
     </div>
   );
 }

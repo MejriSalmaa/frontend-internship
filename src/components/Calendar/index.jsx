@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import CreateEvent from '../Event/CreateEvent'; // Adjust the import path as per your project structure
 
 const localizer = momentLocalizer(moment);
 
 const MyCalendar = () => {
   const [events, setEvents] = useState([]);
+  const [isCreateEventVisible, setIsCreateEventVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
     fetchEvents();
@@ -20,7 +23,7 @@ const MyCalendar = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         credentials: 'include',
       });
@@ -33,7 +36,7 @@ const MyCalendar = () => {
         data = data.map(event => ({
           ...event,
           start: new Date(event.startDate),
-          end: new Date(event.endDate)
+          end: new Date(event.endDate),
         }));
 
         setEvents(data);
@@ -45,8 +48,18 @@ const MyCalendar = () => {
     }
   };
 
+  const handleSelectSlot = useCallback((slotInfo) => {
+    setSelectedDate(slotInfo.start);
+    setIsCreateEventVisible(true);
+  }, []);
+
+  const handleCloseCreateEvent = () => {
+    setIsCreateEventVisible(false);
+    setSelectedDate(null);
+  };
+
   return (
-    <div style={{ height: 500 }}>
+    <div style={{ height: 500, position: 'relative' }}>
       <Calendar
         localizer={localizer}
         events={events}
@@ -54,7 +67,28 @@ const MyCalendar = () => {
         endAccessor="end"
         titleAccessor="title"
         style={{ height: '100%' }}
+        selectable
+        onSelectSlot={handleSelectSlot}
       />
+      {isCreateEventVisible && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '40%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'white',
+            zIndex: 999,
+            padding: 20,
+            borderRadius: 8,
+            
+            boxShadow: '0px 0px 15px rgba(0, 0, 0, 0.2)',
+            
+          }}
+        >
+          <CreateEvent selectedDate={selectedDate} onClose={handleCloseCreateEvent} />
+        </div>
+      )}
     </div>
   );
 };
