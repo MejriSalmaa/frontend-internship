@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { jwtDecode } from "jwt-decode";
 import CreateEvent from '../Event/CreateEvent'; // Adjust the import path as per your project structure
 import EventUpdate from '../Event/EventUpdate'; // Adjust the import path as per your project structure
 
@@ -13,8 +16,18 @@ const MyCalendar = () => {
   const [isEventUpdateVisible, setIsEventUpdateVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setUserEmail(decodedToken.email);
+      } catch (error) {
+        console.error('Failed to decode token:', error);
+      }
+    }
     fetchEvents();
   }, []);
 
@@ -57,9 +70,14 @@ const MyCalendar = () => {
   }, []);
 
   const handleSelectEvent = useCallback((event) => {
+    if (event.creator !== userEmail) {
+      toast.error('You are not authorized to update this event');
+      return;
+    }
+
     setSelectedEvent(event);
     setIsEventUpdateVisible(true);
-  }, []);
+  }, [userEmail]);
 
   const handleCloseCreateEvent = () => {
     setIsCreateEventVisible(false);
@@ -92,6 +110,7 @@ const MyCalendar = () => {
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
       />
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
       {isCreateEventVisible && (
         <div
           style={{

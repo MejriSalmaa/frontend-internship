@@ -9,15 +9,18 @@ export const validateEmail = (email) => {
     return usernameRegex.test(username);
   };
 
-export const validateTitle = (title) => {
-  const titleRegex = /^[A-Za-z\s]+$/;
-  return titleRegex.test(title);
-};
-
-export const validateDescription = (description) => {
-  const descriptionRegex = /^[A-Za-z0-9\s]+$/;
-  return descriptionRegex.test(description);
-};
+  export const validateTitle = (title) => {
+    // Allow letters, numbers, spaces, and common symbols
+    const titleRegex = /^[A-Za-z0-9\s.,!?'"/()&-]+$/;
+    return titleRegex.test(title);
+  };
+  
+  export const validateDescription = (description) => {
+    // Allow letters, numbers, spaces, and common symbols
+    const descriptionRegex = /^[A-Za-z0-9\s.,!?'"/()&-]+$/;
+    return descriptionRegex.test(description);
+  };
+  
 
 export const validateLocation = (location) => {
   const locationRegex = /^[A-Za-z0-9\s]+$/;
