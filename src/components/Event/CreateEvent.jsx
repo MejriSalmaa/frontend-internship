@@ -96,8 +96,8 @@ const CreateEvent = ({ onClose }) => {
       description,
       category,
       location,
-      startDate,
-      endDate,
+      startDate: moment.tz(startDate, 'UTC').format(), // Convert to UTC format
+      endDate: moment.tz(endDate, 'UTC').format(),     // Convert to UTC format
       participants,
     };
 
@@ -228,6 +228,8 @@ const CreateEvent = ({ onClose }) => {
                   <DateTimePicker
                     label="Start Date"
                     value={startDate}
+                    dateFormat="DD-MMM-YYYY HH:mm"  // Corrected format
+
                     onChange={(newValue) => setStartDate(newValue)}
                     renderInput={(props) => (
                       <TextField {...props} margin="dense" fullWidth error={!!errors.startDate} helperText={errors.startDate} />
@@ -236,6 +238,8 @@ const CreateEvent = ({ onClose }) => {
                   <DateTimePicker
                     label="End Date"
                     value={endDate}
+                    dateFormat="DD-MMM-YYYY HH:mm"  // Corrected format
+
                     onChange={(newValue) => setEndDate(newValue)}
                     renderInput={(props) => (
                       <TextField {...props} margin="dense" fullWidth error={!!errors.endDate} helperText={errors.endDate} />

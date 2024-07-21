@@ -12,6 +12,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import moment from 'moment';
+import 'moment-timezone';
 import {
   validateTitle,
   validateDescription,
@@ -95,8 +96,8 @@ const EventUpdate = ({ event, onClose, onUpdate }) => {
       description,
       category,
       location,
-      start: startDate.toISOString(),
-      end: endDate.toISOString(),
+      startDate: startDate.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"), // Convert to UTC and format
+      endDate: endDate.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),     // Convert to UTC and format
       participants: participants.split(',').map(participant => participant.trim()),
     };
 
@@ -203,8 +204,10 @@ const EventUpdate = ({ event, onClose, onUpdate }) => {
                   <DateTimePicker
                     label="Start Date"
                     value={startDate}
-                    onChange={(newValue) => setStartDate(newValue)}
-                    renderInput={(props) => (
+                    onChange={(newValue) => {
+                      console.log('Start Date changed to:', newValue.format());
+                      setStartDate(newValue);
+                    }}                    renderInput={(props) => (
                       <TextField
                         {...props}
                         margin="dense"
@@ -217,8 +220,11 @@ const EventUpdate = ({ event, onClose, onUpdate }) => {
                   <DateTimePicker
                     label="End Date"
                     value={endDate}
-                    onChange={(newValue) => setEndDate(newValue)}
-                    renderInput={(props) => (
+
+                    onChange={(newValue) => {
+                      console.log('End Date changed to:', newValue.format());
+                      setEndDate(newValue);
+                    }}                    renderInput={(props) => (
                       <TextField
                         {...props}
                         margin="dense"

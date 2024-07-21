@@ -4,7 +4,7 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {jwtDecode} from "jwt-decode";
+import {jwtDecode} from 'jwt-decode';
 import CreateEvent from '../Event/CreateEvent'; // Adjust the import path as per your project structure
 import EventUpdate from '../Event/EventUpdate'; // Adjust the import path as per your project structure
 import ReadEvent from '../Event/ReadEvent'; // Adjust the import path as per your project structure
@@ -15,6 +15,7 @@ const MyCalendar = () => {
   const [events, setEvents] = useState([]);
   const [isCreateEventVisible, setIsCreateEventVisible] = useState(false);
   const [isEventUpdateVisible, setIsEventUpdateVisible] = useState(false);
+  const [isReadEventVisible, setIsReadEventVisible] = useState(false); // State to track ReadEvent visibility
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userEmail, setUserEmail] = useState('');
@@ -74,10 +75,16 @@ const MyCalendar = () => {
     (event) => {
       console.log('Selected event:', event); // This should log when an event is selected
 
-      setSelectedEvent(event);
+      // Toggle ReadEvent visibility
+      if (selectedEvent && selectedEvent._id === event._id) {
+        setIsReadEventVisible(!isReadEventVisible);
+      } else {
+        setSelectedEvent(event);
+        setIsReadEventVisible(true);
+      }
       setIsEventUpdateVisible(false); // Ensure not updating while opening ReadEvent
     },
-    [ ]
+    [isReadEventVisible, selectedEvent]
   );
 
   const handleCloseCreateEvent = () => {
@@ -160,7 +167,7 @@ const MyCalendar = () => {
           <CreateEvent selectedDate={selectedDate} onClose={handleCloseCreateEvent} />
         </div>
       )}
-      {selectedEvent && !isEventUpdateVisible && (
+      {isReadEventVisible && selectedEvent && !isEventUpdateVisible && (
         <div
           style={{
             position: 'absolute',
