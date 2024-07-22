@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {jwtDecode} from 'jwt-decode';
-import CreateEvent from '../Event/CreateEvent'; // Adjust the import path as per your project structure
-import EventUpdate from '../Event/EventUpdate'; // Adjust the import path as per your project structure
-import ReadEvent from '../Event/ReadEvent'; // Adjust the import path as per your project structure
+import CreateEvent from '../Event/CreateEvent';
+import EventUpdate from '../Event/EventUpdate';
+import ReadEvent from '../Event/ReadEvent';
 
 const localizer = momentLocalizer(moment);
 
@@ -15,10 +15,11 @@ const MyCalendar = () => {
   const [events, setEvents] = useState([]);
   const [isCreateEventVisible, setIsCreateEventVisible] = useState(false);
   const [isEventUpdateVisible, setIsEventUpdateVisible] = useState(false);
-  const [isReadEventVisible, setIsReadEventVisible] = useState(false); // State to track ReadEvent visibility
+  const [isReadEventVisible, setIsReadEventVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userEmail, setUserEmail] = useState('');
+  const readEventRef = useRef(null);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -36,7 +37,6 @@ const MyCalendar = () => {
   const fetchEvents = async () => {
     try {
       const token = localStorage.getItem('access_token');
-
       const response = await fetch('http://localhost:3000/events', {
         method: 'GET',
         headers: {
@@ -69,23 +69,38 @@ const MyCalendar = () => {
   const handleSelectSlot = useCallback((slotInfo) => {
     setSelectedDate(slotInfo.start);
     setIsCreateEventVisible(true);
+    setIsReadEventVisible(false);
+    setSelectedEvent(null);
   }, []);
 
   const handleSelectEvent = useCallback(
     (event) => {
-      console.log('Selected event:', event); // This should log when an event is selected
-
-      // Toggle ReadEvent visibility
-      if (selectedEvent && selectedEvent._id === event._id) {
-        setIsReadEventVisible(!isReadEventVisible);
-      } else {
-        setSelectedEvent(event);
-        setIsReadEventVisible(true);
-      }
-      setIsEventUpdateVisible(false); // Ensure not updating while opening ReadEvent
+      console.log('Selected event:', event);
+      setSelectedEvent(event);
+      setIsReadEventVisible(true);
+      setIsCreateEventVisible(false);
+      setIsEventUpdateVisible(false);
     },
-    [isReadEventVisible, selectedEvent]
+    []
   );
+
+  const handleClickOutside = useCallback((event) => {
+    if (
+      readEventRef.current &&
+      !readEventRef.current.contains(event.target) &&
+      isReadEventVisible
+    ) {
+      setIsReadEventVisible(false);
+      setSelectedEvent(null);
+    }
+  }, [isReadEventVisible]);
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [handleClickOutside]);
 
   const handleCloseCreateEvent = () => {
     setIsCreateEventVisible(false);
@@ -100,16 +115,17 @@ const MyCalendar = () => {
   const handleEventUpdate = (updatedEvent) => {
     setEvents((prevEvents) =>
       prevEvents.map((event) =>
-        event.id === updatedEvent.id ? { ...event, ...updatedEvent } : event
+        event._id === updatedEvent._id ? { ...event, ...updatedEvent } : event
       )
     );
     setIsEventUpdateVisible(false);
     setSelectedEvent(null);
+    toast.success('Event updated successfully');
+    fetchEvents();
   };
 
   const editEvent = (event) => {
     console.log('Editing event:', event);
-
     setSelectedEvent(event);
     setIsEventUpdateVisible(true);
   };
@@ -128,6 +144,8 @@ const MyCalendar = () => {
       if (response.ok) {
         setEvents((prevEvents) => prevEvents.filter((event) => event._id !== id));
         toast.success('Event deleted successfully');
+        setIsReadEventVisible(false);
+        setSelectedEvent(null);
       } else {
         toast.error('Failed to delete event');
       }
@@ -169,6 +187,7 @@ const MyCalendar = () => {
       )}
       {isReadEventVisible && selectedEvent && !isEventUpdateVisible && (
         <div
+          ref={readEventRef}
           style={{
             position: 'absolute',
             top: '40%',
