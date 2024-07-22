@@ -11,6 +11,15 @@ import ReadEvent from '../Event/ReadEvent';
 
 const localizer = momentLocalizer(moment);
 
+const categoryColors = {
+  'Anniversaire': '#af7ab1',
+  'Teambuilding': '#652586',
+  'Événement social': '#98c01f',
+  'Événement sportif': '#708d33',
+  'Séminaire': '#e60513',
+  'Formation': '#ea9901'
+};
+
 const MyCalendar = () => {
   const [events, setEvents] = useState([]);
   const [isCreateEventVisible, setIsCreateEventVisible] = useState(false);
@@ -154,6 +163,27 @@ const MyCalendar = () => {
     }
   };
 
+  // Define dayPropGetter to add custom class to the current day
+  const dayPropGetter = (date) => {
+    const currentDate = moment().startOf('day');
+    const dateToCheck = moment(date).startOf('day');
+
+    if (dateToCheck.isSame(currentDate)) {
+      return {
+        className: 'current-day'
+      };
+    }
+    return {};
+  };
+
+  // Define eventPropGetter to add custom colors to events based on category
+  const eventPropGetter = (event) => {
+    const backgroundColor = categoryColors[event.category] || '#3174ad'; // Default color if category is not found
+    return {
+      style: { backgroundColor }
+    };
+  };
+
   return (
     <div style={{ height: 500, position: 'relative' }}>
       <Calendar
@@ -166,6 +196,8 @@ const MyCalendar = () => {
         selectable
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
+        dayPropGetter={dayPropGetter} // Add this line
+        eventPropGetter={eventPropGetter} // Add this line
       />
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
       {isCreateEventVisible && (

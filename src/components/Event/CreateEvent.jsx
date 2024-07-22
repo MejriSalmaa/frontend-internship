@@ -153,131 +153,131 @@ const CreateEvent = ({ onClose }) => {
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              p: 1, // Reduced padding
-            }}
-          >
-            <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold' }}>
-              Create Event
-            </Typography>
-            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
-              <TextField
-                margin="dense" // Reduced margin
-                required
-                fullWidth
-                id="title"
-                label="Title"
-                name="title"
-                autoFocus
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                error={!!errors.title}
-                helperText={errors.title}
-              />
-              <TextField
-                margin="dense" // Reduced margin
-                required
-                fullWidth
-                id="description"
-                label="Description"
-                name="description"
-                multiline
-                rows={3} // Number of rows for the textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                error={!!errors.description}
-                helperText={errors.description}
-              />
-              <TextField
-                margin="dense" // Reduced margin
-                required
-                fullWidth
-                select
-                id="category"
-                label="Category"
-                name="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                error={!!errors.category}
-                helperText={errors.category}
-              >
-                {categories.map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {category}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                margin="dense" // Reduced margin
-                required
-                fullWidth
-                id="location"
-                label="Location"
-                name="location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                error={!!errors.location}
-                helperText={errors.location}
-              />
-              <LocalizationProvider dateAdapter={AdapterMoment}>
-                <Stack direction="row" spacing={2} sx={{ mt: 1, width: '100%' }}>
-                  <DateTimePicker
-                    label="Start Date"
-                    value={startDate}
-                    dateFormat="DD-MMM-YYYY HH:mm"  // Corrected format
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            p: 1, // Reduced padding
+          }}
+        >
+          <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold' }}>
+            Create Event
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
+            <TextField
+              margin="dense" // Reduced margin
+              required
+              fullWidth
+              id="title"
+              label="Title"
+              name="title"
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              error={!!errors.title}
+              helperText={errors.title}
+            />
+            <TextField
+              margin="dense" // Reduced margin
+              required
+              fullWidth
+              id="description"
+              label="Description"
+              name="description"
+              multiline
+              rows={3} // Number of rows for the textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              error={!!errors.description}
+              helperText={errors.description}
+            />
+            <TextField
+              margin="dense" // Reduced margin
+              required
+              fullWidth
+              select
+              id="category"
+              label="Category"
+              name="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              error={!!errors.category}
+              helperText={errors.category}
+            >
+              {categories.map((category) => (
+                <MenuItem key={category} value={category}>
+                  {category}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              margin="dense" // Reduced margin
+              required
+              fullWidth
+              id="location"
+              label="Location"
+              name="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              error={!!errors.location}
+              helperText={errors.location}
+            />
+            <LocalizationProvider dateAdapter={AdapterMoment}>
+              <Stack direction="row" spacing={2} sx={{ mt: 1, width: '100%' }}>
+                <DateTimePicker
+                  label="Start Date"
+                  value={startDate}
+                  dateFormat="DD-MMM-YYYY HH:mm"  // Corrected format
 
-                    onChange={(newValue) => setStartDate(newValue)}
-                    renderInput={(props) => (
-                      <TextField {...props} margin="dense" fullWidth error={!!errors.startDate} helperText={errors.startDate} />
-                    )}
-                  />
-                  <DateTimePicker
-                    label="End Date"
-                    value={endDate}
-                    dateFormat="DD-MMM-YYYY HH:mm"  // Corrected format
+                  onChange={(newValue) => setStartDate(newValue)}
+                  renderInput={(props) => (
+                    <TextField {...props} margin="dense" fullWidth error={!!errors.startDate} helperText={errors.startDate} />
+                  )}
+                />
+                <DateTimePicker
+                  label="End Date"
+                  value={endDate}
+                  dateFormat="DD-MMM-YYYY HH:mm"  // Corrected format
 
-                    onChange={(newValue) => setEndDate(newValue)}
-                    renderInput={(props) => (
-                      <TextField {...props} margin="dense" fullWidth error={!!errors.endDate} helperText={errors.endDate} />
-                    )}
-                  />
-                </Stack>
-              </LocalizationProvider>
-              <TextField
-                margin="dense" // Reduced margin
-                required
-                fullWidth
-                id="participants"
-                label="Participants"
-                name="participants"
-                value={participants}
-                onChange={(e) => setParticipants(e.target.value)}
-                error={!!errors.participants}
-                helperText={errors.participants}
-              />
-              
-              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                >
-                  Create Event
-                </Button>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </Button>
+                  onChange={(newValue) => setEndDate(newValue)}
+                  renderInput={(props) => (
+                    <TextField {...props} margin="dense" fullWidth error={!!errors.endDate} helperText={errors.endDate} />
+                  )}
+                />
               </Stack>
-            </Box>
+            </LocalizationProvider>
+            <TextField
+              margin="dense" // Reduced margin
+              required
+              fullWidth
+              id="participants"
+              label="Participants"
+              name="participants"
+              value={participants}
+              onChange={(e) => setParticipants(e.target.value)}
+              error={!!errors.participants}
+              helperText={errors.participants}
+            />
+            
+            <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+              >
+                Create Event
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
+            </Stack>
           </Box>
+        </Box>
       </Container>
     </ThemeProvider>
   );
