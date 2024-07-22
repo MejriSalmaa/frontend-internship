@@ -2,11 +2,11 @@ import React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import Badge from '@mui/material/Badge';
-import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MailIcon from '@mui/icons-material/Mail';
@@ -23,7 +23,7 @@ const logoStyle = {
 export default function AuthenticatedHeader({ userProfile }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-  const navigate = useNavigate();  // Initialize useNavigate hook
+  const navigate = useNavigate();
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -48,20 +48,18 @@ export default function AuthenticatedHeader({ userProfile }) {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('access_token');
-
       const response = await fetch('http://localhost:3000/auth/logout', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
         },
         credentials: 'include',
       });
       if (response.ok) {
-        localStorage.removeItem('access_token'); // Remove token from local storage
-        navigate('/'); // Redirect to login or home page
+        localStorage.removeItem('access_token');
+        navigate('/');
       } else {
         console.error('Logout failed');
-        // Handle logout failure
       }
     } catch (error) {
       console.error('Network error:', error);
@@ -72,16 +70,10 @@ export default function AuthenticatedHeader({ userProfile }) {
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
-      anchorOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       id={menuId}
       keepMounted
-      transformOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
+      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
@@ -94,16 +86,10 @@ export default function AuthenticatedHeader({ userProfile }) {
   const renderMobileMenu = (
     <Menu
       anchorEl={mobileMoreAnchorEl}
-      anchorOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       id={mobileMenuId}
       keepMounted
-      transformOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
+      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
@@ -133,8 +119,7 @@ export default function AuthenticatedHeader({ userProfile }) {
         >
           {userProfile.picture ? (
             <img
-              src={userProfile.picture}
-              alt="profile"
+              src={`http://localhost:3000${userProfile.picture}`} // Ensure the URL is correct
               style={{ width: '40px', height: '40px', borderRadius: '50%' }}
             />
           ) : (
@@ -190,7 +175,7 @@ export default function AuthenticatedHeader({ userProfile }) {
             >
               {userProfile.picture ? (
                 <img
-                  src={userProfile.picture}
+                  src={`http://localhost:3000${userProfile.picture}`} // Ensure the URL is correct
                   alt="profile"
                   style={{ width: '40px', height: '40px', borderRadius: '50%' }}
                 />
@@ -220,5 +205,10 @@ export default function AuthenticatedHeader({ userProfile }) {
 }
 
 AuthenticatedHeader.propTypes = {
-  userProfile: PropTypes.object.isRequired,
+  userProfile: PropTypes.shape({
+    email: PropTypes.string.isRequired,
+    username: PropTypes.string.isRequired,
+    picture: PropTypes.string,
+    role: PropTypes.string.isRequired,
+  }).isRequired,
 };

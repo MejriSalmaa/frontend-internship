@@ -23,6 +23,8 @@ function AuthenticatedPage() {
         }
 
         const data = await response.json();
+        console.log('Fetched user profile:', data);
+
         setUserProfile(data); // Update state with user profile data
       } catch (error) {
         console.error('Error fetching user profile:', error);
