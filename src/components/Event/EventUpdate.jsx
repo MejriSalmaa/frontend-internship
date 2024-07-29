@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '@mui/material/Card';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -12,7 +12,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import moment from 'moment';
-import 'moment-timezone';
+import debounce from 'lodash/debounce';
 import {
   validateTitle,
   validateDescription,
@@ -20,8 +20,10 @@ import {
   validateDate,
   validateStartEndDate,
   validateParticipants,
-  validateCategory,
+  validateCategory
 } from '../../utils/validation'; // Adjust the path as necessary
+import Autocomplete from '@mui/material/Autocomplete';
+import Chip from '@mui/material/Chip';
 
 const theme = createTheme();
 
@@ -32,9 +34,11 @@ const EventUpdate = ({ event, onClose, onUpdate }) => {
   const [location, setLocation] = useState(event.location || '');
   const [startDate, setStartDate] = useState(moment(event.start) || moment());
   const [endDate, setEndDate] = useState(moment(event.end) || moment());
-  const [participants, setParticipants] = useState(event.participants.join(', ') || '');
+  const [participants, setParticipants] = useState(event.participants || []);
   const [categories, setCategories] = useState([]);
+  const [participantSuggestions, setParticipantSuggestions] = useState([]);
   const [errors, setErrors] = useState({});
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     fetchCategories();
@@ -53,6 +57,31 @@ const EventUpdate = ({ event, onClose, onUpdate }) => {
       console.error('Network error:', error);
     }
   };
+
+  const fetchParticipantSuggestions = async (search) => {
+    if (!search) {
+      setItems([]);
+      return;
+    }
+    try {
+      const encodedSearch = encodeURIComponent(search.trim());
+      const url = `http://localhost:3000/users/emails/${encodedSearch}`;
+      console.log(`Fetching URL: ${url}`); // Log URL for debugging
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to fetch participant suggestions:', errorData);
+      } else {
+        const data = await response.json();
+        setItems(data.map(email => email));
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    }
+  };
+
+  const debouncedFetchParticipantSuggestions = useCallback(debounce(fetchParticipantSuggestions, 300), []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -98,7 +127,7 @@ const EventUpdate = ({ event, onClose, onUpdate }) => {
       location,
       startDate: startDate.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"), // Convert to UTC and format
       endDate: endDate.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),     // Convert to UTC and format
-      participants: participants.split(',').map(participant => participant.trim()),
+      participants,
     };
 
     const endpoint = `http://localhost:3000/events/update/${event._id}`;
@@ -126,138 +155,159 @@ const EventUpdate = ({ event, onClose, onUpdate }) => {
     }
   };
 
+  const handleOnInputChange = (event, value) => {
+    debouncedFetchParticipantSuggestions(value);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              p: 1,
-            }}
-          >
-            <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold' }}>
-              Update Event
-            </Typography>
-            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
-              <TextField
-                margin="dense"
-                required
-                fullWidth
-                id="title"
-                label="Title"
-                name="title"
-                autoFocus
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                error={!!errors.title}
-                helperText={errors.title}
-              />
-              <TextField
-                margin="dense"
-                required
-                fullWidth
-                id="description"
-                label="Description"
-                name="description"
-                multiline
-                rows={4}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                error={!!errors.description}
-                helperText={errors.description}
-              />
-              <TextField
-                margin="dense"
-                required
-                fullWidth
-                select
-                id="category"
-                label="Category"
-                name="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                error={!!errors.category}
-                helperText={errors.category}
-              >
-                {categories.map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {category}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                margin="dense"
-                required
-                fullWidth
-                id="location"
-                label="Location"
-                name="location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                error={!!errors.location}
-                helperText={errors.location}
-              />
-              <LocalizationProvider dateAdapter={AdapterMoment}>
-                <Stack direction="row" spacing={2} sx={{ mt: 1, width: '100%' }}>
-                  <DateTimePicker
-                    label="Start Date"
-                    value={startDate}
-                    onChange={(newValue) => {
-                      console.log('Start Date changed to:', newValue.format());
-                      setStartDate(newValue);
-                    }}                    renderInput={(props) => (
-                      <TextField
-                        {...props}
-                        margin="dense"
-                        fullWidth
-                        error={!!errors.startDate}
-                        helperText={errors.startDate}
-                      />
-                    )}
-                  />
-                  <DateTimePicker
-                    label="End Date"
-                    value={endDate}
-
-                    onChange={(newValue) => {
-                      console.log('End Date changed to:', newValue.format());
-                      setEndDate(newValue);
-                    }}                    renderInput={(props) => (
-                      <TextField
-                        {...props}
-                        margin="dense"
-                        fullWidth
-                        error={!!errors.endDate}
-                        helperText={errors.endDate}
-                      />
-                    )}
-                  />
-                </Stack>
-              </LocalizationProvider>
-              <TextField
-                margin="dense"
-                required
-                fullWidth
-                id="participants"
-                label="Participants"
-                name="participants"
-                value={participants}
-                onChange={(e) => setParticipants(e.target.value)}
-                error={!!errors.participants}
-                helperText={errors.participants}
-              />
-              <Stack direction="row" spacing={2} sx={{ mt: 2, mb: 2 }}>
-                <Button type="submit" fullWidth variant="contained">
-                  Update Event
-                </Button>
-                <Button fullWidth variant="outlined" onClick={onClose}>
-                  Cancel
-                </Button>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            p: 1,
+          }}
+        >
+          <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold' }}>
+            Update Event
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
+            <TextField
+              margin="dense"
+              required
+              fullWidth
+              id="title"
+              label="Title"
+              name="title"
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              error={!!errors.title}
+              helperText={errors.title}
+            />
+            <TextField
+              margin="dense"
+              required
+              fullWidth
+              id="description"
+              label="Description"
+              name="description"
+              multiline
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              error={!!errors.description}
+              helperText={errors.description}
+            />
+            <TextField
+              margin="dense"
+              required
+              fullWidth
+              select
+              id="category"
+              label="Category"
+              name="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              error={!!errors.category}
+              helperText={errors.category}
+            >
+              {categories.map((category) => (
+                <MenuItem key={category} value={category}>
+                  {category}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              margin="dense"
+              required
+              fullWidth
+              id="location"
+              label="Location"
+              name="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              error={!!errors.location}
+              helperText={errors.location}
+            />
+            <LocalizationProvider dateAdapter={AdapterMoment}>
+              <Stack direction="row" spacing={2} sx={{ mt: 1, width: '100%' }}>
+                <DateTimePicker
+                  label="Start Date"
+                  value={startDate}
+                  onChange={(newValue) => setStartDate(newValue)}
+                  renderInput={(props) => (
+                    <TextField
+                      {...props}
+                      margin="dense"
+                      fullWidth
+                      error={!!errors.startDate}
+                      helperText={errors.startDate}
+                    />
+                  )}
+                />
+                <DateTimePicker
+                  label="End Date"
+                  value={endDate}
+                  onChange={(newValue) => setEndDate(newValue)}
+                  renderInput={(props) => (
+                    <TextField
+                      {...props}
+                      margin="dense"
+                      fullWidth
+                      error={!!errors.endDate}
+                      helperText={errors.endDate}
+                    />
+                  )}
+                />
               </Stack>
-            </Box>
+            </LocalizationProvider>
+            <div style={{ margin: '10px 0' }}>
+              <Autocomplete
+                multiple
+                freeSolo
+                options={items}
+                getOptionLabel={(option) => option}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    label="Participants"
+                    placeholder="Type or select email"
+                  />
+                )}
+                onInputChange={handleOnInputChange}
+                onChange={(event, value) => setParticipants(value)}
+                value={participants}
+              />
+            </div>
+            <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ backgroundColor: 'green' }}
+              >
+                Update Event
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                sx={{ backgroundColor: 'red' }}
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
+            </Stack>
           </Box>
+        </Box>
       </Container>
     </ThemeProvider>
   );

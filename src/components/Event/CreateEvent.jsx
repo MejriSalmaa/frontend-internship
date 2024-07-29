@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '@mui/material/Card';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -12,6 +12,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import moment from 'moment';
+import debounce from 'lodash/debounce';
 import {
   validateTitle,
   validateDescription,
@@ -21,6 +22,8 @@ import {
   validateParticipants,
   validateCategory
 } from '../../utils/validation.js'; // Adjust the path as necessary
+import Autocomplete from '@mui/material/Autocomplete';
+import Chip from '@mui/material/Chip';
 
 const theme = createTheme();
 
@@ -31,10 +34,11 @@ const CreateEvent = ({ onClose }) => {
   const [location, setLocation] = useState('');
   const [startDate, setStartDate] = useState(moment());
   const [endDate, setEndDate] = useState(moment());
-  const [participants, setParticipants] = useState('');
+  const [participants, setParticipants] = useState([]);
   const [categories, setCategories] = useState([]);
-
+  const [participantSuggestions, setParticipantSuggestions] = useState([]);
   const [errors, setErrors] = useState({});
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     fetchCategories();
@@ -53,6 +57,31 @@ const CreateEvent = ({ onClose }) => {
       console.error('Network error:', error);
     }
   };
+
+  const fetchParticipantSuggestions = async (search) => {
+    if (!search) {
+      setItems([]);
+      return;
+    }
+    try {
+      const encodedSearch = encodeURIComponent(search.trim());
+      const url = `http://localhost:3000/users/emails/${encodedSearch}`;
+      console.log(`Fetching URL: ${url}`); // Log URL for debugging
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to fetch participant suggestions:', errorData);
+      } else {
+        const data = await response.json();
+        setItems(data.map(email => email));
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    }
+  };
+
+  const debouncedFetchParticipantSuggestions = useCallback(debounce(fetchParticipantSuggestions, 300), []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -96,15 +125,13 @@ const CreateEvent = ({ onClose }) => {
       description,
       category,
       location,
-      startDate: moment.tz(startDate, 'UTC').format(), // Convert to UTC format
-      endDate: moment.tz(endDate, 'UTC').format(),     // Convert to UTC format
+      startDate: moment.tz(startDate, 'UTC').format(),
+      endDate: moment.tz(endDate, 'UTC').format(),
       participants,
     };
 
-    const endpoint = 'http://localhost:3000/events/create';
-
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch('http://localhost:3000/events/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,13 +154,11 @@ const CreateEvent = ({ onClose }) => {
       setLocation('');
       setStartDate(moment());
       setEndDate(moment());
-      setParticipants('');
+      setParticipants([]);
       setErrors({});
       onClose(); // Close the form
-      // Optionally, you can redirect or show a success message here
     } catch (error) {
       console.error('Error:', error);
-      // Handle errors, e.g., showing an error message to the user
     }
   };
 
@@ -145,9 +170,13 @@ const CreateEvent = ({ onClose }) => {
     setLocation('');
     setStartDate(moment());
     setEndDate(moment());
-    setParticipants('');
+    setParticipants([]);
     setErrors({});
     onClose();
+  };
+
+  const handleOnInputChange = (event, value) => {
+    debouncedFetchParticipantSuggestions(value);
   };
 
   return (
@@ -158,7 +187,7 @@ const CreateEvent = ({ onClose }) => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            p: 1, // Reduced padding
+            p: 1,
           }}
         >
           <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold' }}>
@@ -166,7 +195,7 @@ const CreateEvent = ({ onClose }) => {
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
             <TextField
-              margin="dense" // Reduced margin
+              margin="dense"
               required
               fullWidth
               id="title"
@@ -179,21 +208,21 @@ const CreateEvent = ({ onClose }) => {
               helperText={errors.title}
             />
             <TextField
-              margin="dense" // Reduced margin
+              margin="dense"
               required
               fullWidth
               id="description"
               label="Description"
               name="description"
               multiline
-              rows={3} // Number of rows for the textarea
+              rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               error={!!errors.description}
               helperText={errors.description}
             />
             <TextField
-              margin="dense" // Reduced margin
+              margin="dense"
               required
               fullWidth
               select
@@ -212,7 +241,7 @@ const CreateEvent = ({ onClose }) => {
               ))}
             </TextField>
             <TextField
-              margin="dense" // Reduced margin
+              margin="dense"
               required
               fullWidth
               id="location"
@@ -228,8 +257,7 @@ const CreateEvent = ({ onClose }) => {
                 <DateTimePicker
                   label="Start Date"
                   value={startDate}
-                  dateFormat="DD-MMM-YYYY HH:mm"  // Corrected format
-
+                  dateFormat="DD-MMM-YYYY HH:mm"
                   onChange={(newValue) => setStartDate(newValue)}
                   renderInput={(props) => (
                     <TextField {...props} margin="dense" fullWidth error={!!errors.startDate} helperText={errors.startDate} />
@@ -238,8 +266,7 @@ const CreateEvent = ({ onClose }) => {
                 <DateTimePicker
                   label="End Date"
                   value={endDate}
-                  dateFormat="DD-MMM-YYYY HH:mm"  // Corrected format
-
+                  dateFormat="DD-MMM-YYYY HH:mm"
                   onChange={(newValue) => setEndDate(newValue)}
                   renderInput={(props) => (
                     <TextField {...props} margin="dense" fullWidth error={!!errors.endDate} helperText={errors.endDate} />
@@ -247,19 +274,29 @@ const CreateEvent = ({ onClose }) => {
                 />
               </Stack>
             </LocalizationProvider>
-            <TextField
-              margin="dense" // Reduced margin
-              required
-              fullWidth
-              id="participants"
-              label="Participants"
-              name="participants"
-              value={participants}
-              onChange={(e) => setParticipants(e.target.value)}
-              error={!!errors.participants}
-              helperText={errors.participants}
-            />
-            
+            <div style={{ margin: '10px 0' }}>
+              <Autocomplete
+                multiple
+                freeSolo
+                options={items}
+                getOptionLabel={(option) => option}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    label="Participants"
+                    placeholder="Type or select email"
+                  />
+                )}
+                onInputChange={handleOnInputChange}
+                onChange={(event, value) => setParticipants(value)}
+              />
+            </div>
             <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
               <Button
                 type="submit"

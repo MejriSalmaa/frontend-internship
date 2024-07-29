@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -9,8 +9,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import MailIcon from '@mui/icons-material/Mail';
-import MoreIcon from '@mui/icons-material/MoreVert';
+import CloseIcon from '@mui/icons-material/Close'; // Import Close icon
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,28 +20,55 @@ const logoStyle = {
 };
 
 export default function AuthenticatedHeader({ userProfile }) {
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
+  const [notificationsAnchorEl, setNotificationsAnchorEl] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
 
-  const isMenuOpen = Boolean(anchorEl);
-  const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  const isProfileMenuOpen = Boolean(profileAnchorEl);
+  const isNotificationsMenuOpen = Boolean(notificationsAnchorEl);
 
-  const handleProfileMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/notifications?userEmail=' + encodeURIComponent(userProfile.email), {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data);
+        const unreadResponse = await fetch('http://localhost:3000/notifications/unread-count?userEmail=' + encodeURIComponent(userProfile.email), {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        });
+        const unreadData = await unreadResponse.json();
+        setUnreadCount(unreadData);
+      } else {
+        console.error('Failed to fetch notifications');
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    }
   };
 
-  const handleMobileMenuClose = () => {
-    setMobileMoreAnchorEl(null);
+  const handleProfileMenuOpen = (event) => {
+    setProfileAnchorEl(event.currentTarget);
+  };
+
+  const handleNotificationsMenuOpen = (event) => {
+    setNotificationsAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
-    setAnchorEl(null);
-    handleMobileMenuClose();
-  };
-
-  const handleMobileMenuOpen = (event) => {
-    setMobileMoreAnchorEl(event.currentTarget);
+    setProfileAnchorEl(null);
+    setNotificationsAnchorEl(null);
   };
 
   const handleLogout = async () => {
@@ -66,68 +92,85 @@ export default function AuthenticatedHeader({ userProfile }) {
     }
   };
 
-  const menuId = 'primary-search-account-menu';
-  const renderMenu = (
+  const handleNotificationClick = (notificationId) => {
+    markAsRead(notificationId);
+  };
+
+  const markAsRead = async (notificationId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/notifications/${notificationId}/read`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
+      if (response.ok) {
+        fetchNotifications();
+      } else {
+        console.error('Failed to mark notification as read');
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    }
+  };
+
+  const handleDeclineClick = async (eventId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/notifications/events/${eventId}/remove-participant`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify({ userEmail: userProfile.email }),
+      });
+      if (response.ok) {
+        fetchNotifications();
+      } else {
+        console.error('Failed to decline participation');
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    }
+  };
+
+  const profileMenuId = 'primary-search-account-menu';
+  const notificationsMenuId = 'primary-notifications-menu';
+
+  const renderProfileMenu = (
     <Menu
-      anchorEl={anchorEl}
+      anchorEl={profileAnchorEl}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      id={menuId}
+      id={profileMenuId}
       keepMounted
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      open={isMenuOpen}
+      open={isProfileMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+      <MenuItem onClick={() => navigate('/profile')}>Profile</MenuItem>
       <MenuItem onClick={handleLogout}>Logout</MenuItem>
     </Menu>
   );
 
-  const mobileMenuId = 'primary-search-account-menu-mobile';
-  const renderMobileMenu = (
+  const renderNotificationsMenu = (
     <Menu
-      anchorEl={mobileMoreAnchorEl}
+      anchorEl={notificationsAnchorEl}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      id={mobileMenuId}
+      id={notificationsMenuId}
       keepMounted
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      open={isMobileMenuOpen}
-      onClose={handleMobileMenuClose}
+      open={isNotificationsMenuOpen}
+      onClose={handleMenuClose}
     >
-      <MenuItem>
-        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-          <Badge badgeContent={4} color="error">
-            <MailIcon />
-          </Badge>
-        </IconButton>
-        <p>Messages</p>
-      </MenuItem>
-      <MenuItem>
-        <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
-          <Badge badgeContent={17} color="error">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-        <p>Notifications</p>
-      </MenuItem>
-      <MenuItem onClick={handleProfileMenuOpen}>
-        <IconButton
-          size="large"
-          aria-label="account of current user"
-          aria-controls="primary-search-account-menu"
-          aria-haspopup="true"
-          color="inherit"
-        >
-          {userProfile.picture ? (
-            <img
-              src={`http://localhost:3000${userProfile.picture}`} // Ensure the URL is correct
-              style={{ width: '40px', height: '40px', borderRadius: '50%' }}
-            />
-          ) : (
-            <AccountCircle />
-          )}
-        </IconButton>
-        <p>Profile</p>
-      </MenuItem>
+      {notifications.map(notification => (
+        <MenuItem key={notification._id} onClick={() => handleNotificationClick(notification._id)}>
+          <Typography variant="body2">{notification.message}</Typography>
+          <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+            {!notification.isRead && <IconButton size="small" onClick={() => handleNotificationClick(notification._id)}>✔️</IconButton>}
+            <IconButton size="small" onClick={() => handleDeclineClick(notification.eventId)}><CloseIcon /></IconButton>
+          </Box>
+        </MenuItem>
+      ))}
     </Menu>
   );
 
@@ -159,8 +202,8 @@ export default function AuthenticatedHeader({ userProfile }) {
             <img src='src/assets/logo.png' alt="logo" style={logoStyle} />
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
-              <Badge badgeContent={17} color="error">
+            <IconButton size="large" aria-label="show new notifications" color="inherit" onClick={handleNotificationsMenuOpen}>
+              <Badge badgeContent={unreadCount} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
@@ -168,7 +211,7 @@ export default function AuthenticatedHeader({ userProfile }) {
               size="large"
               edge="end"
               aria-label="account of current user"
-              aria-controls={menuId}
+              aria-controls={profileMenuId}
               aria-haspopup="true"
               onClick={handleProfileMenuOpen}
               color="inherit"
@@ -184,22 +227,10 @@ export default function AuthenticatedHeader({ userProfile }) {
               )}
             </IconButton>
           </Box>
-          <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="show more"
-              aria-controls={mobileMenuId}
-              aria-haspopup="true"
-              onClick={handleMobileMenuOpen}
-              color="inherit"
-            >
-              <MoreIcon />
-            </IconButton>
-          </Box>
         </Toolbar>
       </AppBar>
-      {renderMobileMenu}
-      {renderMenu}
+      {renderProfileMenu}
+      {renderNotificationsMenu}
     </Box>
   );
 }
