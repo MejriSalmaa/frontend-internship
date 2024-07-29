@@ -125,8 +125,8 @@ const CreateEvent = ({ onClose }) => {
       description,
       category,
       location,
-      startDate: moment.tz(startDate, 'UTC').format(),
-      endDate: moment.tz(endDate, 'UTC').format(),
+      startDate: startDate.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"), // Convert to UTC and format
+      endDate: endDate.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),     // Convert to UTC and format
       participants,
     };
 
