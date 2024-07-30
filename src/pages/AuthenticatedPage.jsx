@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import AuthenticatedHeader from '../layouts/AuthenticatedHeader';
 import Calendar from '../components/Calendar/index';
-import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
-import { debounce } from 'lodash';
 
 function AuthenticatedPage() {
   const [userProfile, setUserProfile] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [filteredEvents, setFilteredEvents] = useState([]);
 
   useEffect(() => {
@@ -40,42 +37,9 @@ function AuthenticatedPage() {
   }, []);
 
   useEffect(() => {
-    fetchFilteredEvents(searchQuery);
-  }, [searchQuery]);
-
-  useEffect(() => {
     // This useEffect ensures Calendar updates when filteredEvents changes
     console.log('Filtered events updated:', filteredEvents);
   }, [filteredEvents]);
-
-  const fetchFilteredEvents = debounce(async (query) => {
-    try {
-      const url = query.trim() === ''
-        ? 'http://localhost:3000/events'
-        : `http://localhost:3000/events/search?query=${query}`;
-      
-      console.log(`Fetching events with query: ${query}`);
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Fetched events:', data);
-        setFilteredEvents(data);
-      } else {
-        console.error('Failed to fetch filtered events');
-      }
-    } catch (error) {
-      console.error('Network error:', error);
-    }
-  }, 300);
-
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
 
   return (
     <div
@@ -92,17 +56,7 @@ function AuthenticatedPage() {
         justifyContent: 'space-between',
       }}
     >
-      {userProfile && <AuthenticatedHeader userProfile={userProfile} />}
-      <Box sx={{ p: 2 }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          label="Search Events"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          placeholder="Search by title, creator, category..."
-        />
-      </Box>
+      {userProfile && <AuthenticatedHeader userProfile={userProfile} setFilteredEvents={setFilteredEvents} />}
       <Calendar events={filteredEvents} />
     </div>
   );

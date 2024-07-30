@@ -10,8 +10,12 @@ import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import CloseIcon from '@mui/icons-material/Close'; // Import Close icon
+import TextField from '@mui/material/TextField';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { debounce } from 'lodash';
+import SearchIcon from '@mui/icons-material/Search'; // Import the magnifying glass icon
+import InputAdornment from '@mui/material/InputAdornment';
 
 const logoStyle = {
   width: '50px',
@@ -19,11 +23,12 @@ const logoStyle = {
   cursor: 'pointer',
 };
 
-export default function AuthenticatedHeader({ userProfile }) {
+export default function AuthenticatedHeader({ userProfile, setFilteredEvents }) {
   const [profileAnchorEl, setProfileAnchorEl] = useState(null);
   const [notificationsAnchorEl, setNotificationsAnchorEl] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   const isProfileMenuOpen = Boolean(profileAnchorEl);
@@ -32,6 +37,10 @@ export default function AuthenticatedHeader({ userProfile }) {
   useEffect(() => {
     fetchNotifications();
   }, []);
+
+  useEffect(() => {
+    fetchFilteredEvents(searchQuery);
+  }, [searchQuery]);
 
   const fetchNotifications = async () => {
     try {
@@ -57,6 +66,31 @@ export default function AuthenticatedHeader({ userProfile }) {
       console.error('Network error:', error);
     }
   };
+
+  const fetchFilteredEvents = debounce(async (query) => {
+    try {
+      const url = query.trim() === ''
+        ? 'http://localhost:3000/events'
+        : `http://localhost:3000/events/search?query=${query}`;
+      
+      console.log(`Fetching events with query: ${query}`);
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Fetched events:', data);
+        setFilteredEvents(data);
+      } else {
+        console.error('Failed to fetch filtered events');
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    }
+  }, 300);
 
   const handleProfileMenuOpen = (event) => {
     setProfileAnchorEl(event.currentTarget);
@@ -174,6 +208,10 @@ export default function AuthenticatedHeader({ userProfile }) {
     </Menu>
   );
 
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
@@ -202,6 +240,31 @@ export default function AuthenticatedHeader({ userProfile }) {
             <img src='src/assets/logo.png' alt="logo" style={logoStyle} />
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <TextField
+              variant="outlined"
+              placeholder="Search events"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              sx={{ 
+                backgroundColor: 'transparent', 
+                borderRadius: '10px',
+                '& .MuiOutlinedInput-root': {
+                  padding: '4px 8px', // Adjust padding to minimize height
+                  fontSize: '0.875rem', // Adjust font size if needed
+                },
+              }}
+              InputProps={{
+                style: {
+                  height: '40px', // Set a specific height if needed
+                },
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton>
+                      <SearchIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}            />
             <IconButton size="large" aria-label="show new notifications" color="inherit" onClick={handleNotificationsMenuOpen}>
               <Badge badgeContent={unreadCount} color="error">
                 <NotificationsIcon />
@@ -242,4 +305,5 @@ AuthenticatedHeader.propTypes = {
     picture: PropTypes.string,
     role: PropTypes.string.isRequired,
   }).isRequired,
+  setFilteredEvents: PropTypes.func.isRequired,
 };
