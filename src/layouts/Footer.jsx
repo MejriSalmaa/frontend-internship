@@ -16,7 +16,7 @@ export default function Footer() {
         flexDirection: 'column',
         alignItems: 'center',
         gap: { xs: 2, sm: 4 },
-        py: { xs: 4, sm: 6 },
+        py: { xs: 2, sm: 4 },
         textAlign: 'center',
         position: 'fixed',
         bottom: 0,
@@ -24,6 +24,8 @@ export default function Footer() {
         right: 0,
         zIndex: 1000,
         backgroundColor: 'transparent',
+        mt: 'auto',
+
     }}
     >
       <Box

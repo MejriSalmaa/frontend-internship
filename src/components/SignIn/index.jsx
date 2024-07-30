@@ -10,7 +10,11 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Stack from '@mui/material/Stack';
-import {validateEmail} from '../../utils/validation'
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { validateEmail } from '../../utils/validation';
 
 const theme = createTheme();
 
@@ -18,9 +22,14 @@ export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [invalidEmailOrPassword, setInvalidEmailOrPassword] = useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,7 +67,7 @@ export default function SignIn() {
       });
       if (response.ok) {
         const data = await response.json();
-        localStorage.setItem('access_token', data.access_token);// Store the token in local storage
+        localStorage.setItem('access_token', data.access_token); // Store the token in local storage
         alert('Login successful');
 
         window.location.href = '/authenticatedPage'; // Redirect to authenticatedPage
@@ -112,13 +121,26 @@ export default function SignIn() {
                 fullWidth
                 name="password"
                 label="Password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="password"
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 error={!!passwordError || invalidEmailOrPassword}
                 helperText={passwordError}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
                 sx={{ borderRadius: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 2 }}>

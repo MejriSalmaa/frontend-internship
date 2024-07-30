@@ -238,11 +238,11 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents }) 
         >
           <Typography variant="h6" component="div" sx={{ display: { xs: 'none', sm: 'block' } }}>
             <img src='src/assets/logo.png' alt="logo" style={logoStyle} />
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+         </Typography>
+          <Box x sx={{ display: 'flex', alignItems: 'center' }}>
             <TextField
               variant="outlined"
-              placeholder="Search events"
+              placeholder="Search..."
               value={searchQuery}
               onChange={handleSearchChange}
               sx={{ 
@@ -252,6 +252,9 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents }) 
                   padding: '4px 8px', // Adjust padding to minimize height
                   fontSize: '0.875rem', // Adjust font size if needed
                 },
+                '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'transparent', // Make the border transparent
+            },
               }}
               InputProps={{
                 style: {

@@ -12,6 +12,9 @@ import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import InputAdornment from '@mui/material/InputAdornment';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { validateEmail, validateUsername } from '../../utils/validation';
 
 const theme = createTheme();
@@ -20,11 +23,17 @@ export default function SignUp() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [picture, setPicture] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+
+  const fileInputRef = React.createRef();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -33,6 +42,7 @@ export default function SignUp() {
     setUsernameError('');
     setEmailError('');
     setPasswordError('');
+    setConfirmPasswordError('');
 
     let valid = true;
 
@@ -48,6 +58,11 @@ export default function SignUp() {
 
     if (password.length < 4) {
       setPasswordError('Password must be at least 4 characters');
+      valid = false;
+    }
+
+    if (password !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
       valid = false;
     }
 
@@ -82,6 +97,7 @@ export default function SignUp() {
       setUsername('');
       setEmail('');
       setPassword('');
+      setConfirmPassword('');
       setPicture(null);
       setAvatarPreview('');
       // Optionally, you can redirect or show a success message here
@@ -95,6 +111,18 @@ export default function SignUp() {
     const file = event.target.files[0];
     setPicture(file);
     setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleClickShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   return (
@@ -115,6 +143,14 @@ export default function SignUp() {
             <Avatar
               src={avatarPreview}
               sx={{ width: 56, height: 56, mt: 1, mb: 1 }} // Reduced margins
+              onClick={handleAvatarClick}
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={handlePictureChange}
             />
             <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
               <TextField
@@ -150,28 +186,53 @@ export default function SignUp() {
                 fullWidth
                 name="password"
                 label="Password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="password"
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 error={!!passwordError}
                 helperText={passwordError}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
-              <IconButton
-                color="primary"
-                aria-label="upload picture"
-                component="label"
-                sx={{ mt: 1, mb: 1 }} // Reduced margins
-              >
-                <input
-                  hidden
-                  accept="image/*"
-                  type="file"
-                  onChange={handlePictureChange}
-                />
-                <PhotoCamera />
-              </IconButton>
+              <TextField
+                margin="dense" // Reduced margin
+                required
+                fullWidth
+                name="confirmPassword"
+                label="Confirm Password"
+                type={showConfirmPassword ? 'text' : 'password'}
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                error={!!confirmPasswordError}
+                helperText={confirmPasswordError}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle confirm password visibility"
+                        onClick={handleClickShowConfirmPassword}
+                        edge="end"
+                      >
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
               <Button
                 type="submit"
                 fullWidth
