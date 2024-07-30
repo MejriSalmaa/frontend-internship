@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { ToastContainer, toast } from 'react-toastify';
@@ -8,6 +8,7 @@ import {jwtDecode} from 'jwt-decode';
 import CreateEvent from '../Event/CreateEvent';
 import EventUpdate from '../Event/EventUpdate';
 import ReadEvent from '../Event/ReadEvent';
+import PropTypes from 'prop-types';
 
 const localizer = momentLocalizer(moment);
 
@@ -20,16 +21,17 @@ const categoryColors = {
   'Formation': '#ea9901'
 };
 
-const MyCalendar = () => {
-  const [events, setEvents] = useState([]);
+const MyCalendar = ({ events: initialEvents }) => {
   const [isCreateEventVisible, setIsCreateEventVisible] = useState(false);
   const [isEventUpdateVisible, setIsEventUpdateVisible] = useState(false);
   const [isReadEventVisible, setIsReadEventVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userEmail, setUserEmail] = useState('');
+  const [events, setEvents] = useState([]);
   const readEventRef = useRef(null);
 
+  // Decode token and set user email
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
@@ -40,40 +42,20 @@ const MyCalendar = () => {
         console.error('Failed to decode token:', error);
       }
     }
-    fetchEvents();
   }, []);
 
-  const fetchEvents = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:3000/events', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        let data = await response.json();
-        console.log('Fetched events:', data);
-
-        // Convert date strings to Date objects
-        data = data.map((event) => ({
-          ...event,
-          start: new Date(event.startDate),
-          end: new Date(event.endDate),
-        }));
-
-        setEvents(data);
-      } else {
-        console.error('Failed to fetch events:', response.statusText);
-      }
-    } catch (error) {
-      console.error('Network error:', error);
+  // Update events when initialEvents prop changes
+  useEffect(() => {
+    if (initialEvents) {
+      // Convert date strings to Date objects
+      const updatedEvents = initialEvents.map((event) => ({
+        ...event,
+        start: new Date(event.startDate),
+        end: new Date(event.endDate),
+      }));
+      setEvents(updatedEvents);
     }
-  };
+  }, [initialEvents]);
 
   const handleSelectSlot = useCallback((slotInfo) => {
     setSelectedDate(slotInfo.start);
@@ -130,7 +112,6 @@ const MyCalendar = () => {
     setIsEventUpdateVisible(false);
     setSelectedEvent(null);
     toast.success('Event updated successfully');
-    fetchEvents();
   };
 
   const editEvent = (event) => {
@@ -163,7 +144,6 @@ const MyCalendar = () => {
     }
   };
 
-  // Define dayPropGetter to add custom class to the current day
   const dayPropGetter = (date) => {
     const currentDate = moment().startOf('day');
     const dateToCheck = moment(date).startOf('day');
@@ -176,9 +156,8 @@ const MyCalendar = () => {
     return {};
   };
 
-  // Define eventPropGetter to add custom colors to events based on category
   const eventPropGetter = (event) => {
-    const backgroundColor = categoryColors[event.category] || '#3174ad'; // Default color if category is not found
+    const backgroundColor = categoryColors[event.category] || '#3174ad';
     return {
       style: { backgroundColor }
     };
@@ -186,7 +165,7 @@ const MyCalendar = () => {
 
   return (
     <div style={{ height: 500, position: 'relative' }}>
-      <Calendar
+      <BigCalendar
         localizer={localizer}
         events={events}
         startAccessor="start"
@@ -196,8 +175,8 @@ const MyCalendar = () => {
         selectable
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
-        dayPropGetter={dayPropGetter} // Add this line
-        eventPropGetter={eventPropGetter} // Add this line
+        dayPropGetter={dayPropGetter}
+        eventPropGetter={eventPropGetter}
       />
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
       {isCreateEventVisible && (
@@ -262,6 +241,10 @@ const MyCalendar = () => {
       )}
     </div>
   );
+};
+
+MyCalendar.propTypes = {
+  events: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 export default MyCalendar;
