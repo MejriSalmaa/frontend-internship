@@ -23,8 +23,8 @@ const logoStyle = {
   cursor: 'pointer',
 };
 
-export default function AuthenticatedHeader({ userProfile, setFilteredEvents }) {
-  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
+export default function AuthenticatedHeader({ userProfile, setFilteredEvents, setCurrentView }) { 
+   const [profileAnchorEl, setProfileAnchorEl] = useState(null);
   const [notificationsAnchorEl, setNotificationsAnchorEl] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -181,7 +181,9 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents }) 
       open={isProfileMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={() => navigate('/profile')}>Profile</MenuItem>
+      <MenuItem onClick={() => setCurrentView('profile')}>Profile</MenuItem> {/* Switch to ProfilePage */}
+      <MenuItem onClick={() => setCurrentView('calendar')}>calendar</MenuItem> {/* Switch to ProfilePage */}
+
       <MenuItem onClick={handleLogout}>Logout</MenuItem>
     </Menu>
   );
@@ -309,4 +311,6 @@ AuthenticatedHeader.propTypes = {
     role: PropTypes.string.isRequired,
   }).isRequired,
   setFilteredEvents: PropTypes.func.isRequired,
+  setCurrentView: PropTypes.func.isRequired, // Add this prop validation
+
 };

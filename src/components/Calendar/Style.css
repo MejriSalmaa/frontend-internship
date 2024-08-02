@@ -1,20 +1,17 @@
-/* Add this CSS to your stylesheet */
-.rbc-today {
-  background: none;
-  color: inherit;
-}
-
-.rbc-date-cell {
+.rbc-day-bg {
   position: relative;
 }
 
-.rbc-today .rbc-date-cell span {
-  display: inline-block;
-  width: 28px;
-  height: 28px;
-  line-height: 28px;
-  text-align: center;
+.current-day .rbc-day-bg::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px; /* Adjust as needed */
+  height: 28px; /* Adjust as needed */
+  border: 2px solid red; /* Adjust color as needed */
   border-radius: 50%;
-  background-color: #007bff;
-  color: #fff;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1; /* Ensure it's on top */
 }

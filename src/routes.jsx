@@ -6,6 +6,8 @@ import Calendar from './components/Calendar/index';
 import AuthenticatedHeader from './layouts/AuthenticatedHeader';
 import AuthenticatedPage from './pages/AuthenticatedPage';
 import CreateEvent from './components/Event/CreateEvent';
+import ManageUser from './pages/ManageUser';
+import ProfilePage from './pages/ProfilePage';
 const AppRoutes = () => {
   return (
     <Routes>
@@ -16,6 +18,8 @@ const AppRoutes = () => {
       <Route path="/authenticated" element={<AuthenticatedHeader />} />
       <Route path="/AuthenticatedPage" element={<AuthenticatedPage />} />
       <Route path ="/create-event" element={<CreateEvent />} />
+      <Route path ="/users" element={<ManageUser />} />
+      <Route path ="/profile" element={<ProfilePage />} />
       {/* Define other routes here */}
     </Routes>
   );

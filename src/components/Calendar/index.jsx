@@ -4,11 +4,12 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import CreateEvent from '../Event/CreateEvent';
 import EventUpdate from '../Event/EventUpdate';
 import ReadEvent from '../Event/ReadEvent';
 import PropTypes from 'prop-types';
+import './Style.css'; // Import custom CSS for calendar styling
 
 const localizer = momentLocalizer(moment);
 

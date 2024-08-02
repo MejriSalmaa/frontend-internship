@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import AuthenticatedHeader from '../layouts/AuthenticatedHeader';
 import Calendar from '../components/Calendar/index';
+import ProfilePage from '../pages/ProfilePage';
 import Box from '@mui/material/Box';
 
 function AuthenticatedPage() {
   const [userProfile, setUserProfile] = useState(null);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const [currentView, setCurrentView] = useState('calendar'); // State to manage the current view
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -56,8 +58,8 @@ function AuthenticatedPage() {
         justifyContent: 'space-between',
       }}
     >
-      {userProfile && <AuthenticatedHeader userProfile={userProfile} setFilteredEvents={setFilteredEvents} />}
-      <Calendar events={filteredEvents} />
+      {userProfile && <AuthenticatedHeader userProfile={userProfile} setFilteredEvents={setFilteredEvents} setCurrentView={setCurrentView} />}
+      {currentView === 'calendar' ? <Calendar events={filteredEvents} /> : <ProfilePage />}
     </div>
   );
 }

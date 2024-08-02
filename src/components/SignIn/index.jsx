@@ -70,7 +70,7 @@ export default function SignIn() {
         localStorage.setItem('access_token', data.access_token); // Store the token in local storage
         alert('Login successful');
 
-        window.location.href = '/authenticatedPage'; // Redirect to authenticatedPage
+        window.location.href = '/AuthenticatedPage'; // Redirect to authenticatedPage
       } else {
         // Handle different error scenarios
         const errorData = await response.json();
@@ -177,6 +177,7 @@ export default function SignIn() {
           </Box>
         </Card>
       </Container>
+      
     </ThemeProvider>
   );
 }
