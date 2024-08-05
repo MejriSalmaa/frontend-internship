@@ -58,5 +58,5 @@ export const validateCategory = (category) => {
 
 // Password validation
 export const validatePassword = (password) => {
-  return password.trim() !== '' && password.length > 4;
+  return  password.length > 4;
 };

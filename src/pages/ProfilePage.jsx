@@ -4,6 +4,7 @@ import { TextField, Avatar, Grid, Paper, Typography, Button, IconButton, InputAd
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { validateUsername, validatePassword } from '../utils/validation'; // Import validation functions
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
@@ -11,11 +12,16 @@ const ProfilePage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [file, setFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState('');
+
+  const [errors, setErrors] = useState({
+    username: '',
+    password: '',
+    confirmPassword: '',
+  });
 
   const fileInputRef = useRef();
 
@@ -35,12 +41,35 @@ const ProfilePage = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching profile:', error);
-      setError('Failed to fetch profile');
       setLoading(false);
     }
   };
 
   const handleUpdateProfile = async () => {
+    const newErrors = {
+      username: '',
+      password: '',
+      confirmPassword: '',
+    };
+
+    // Validate username and password
+    if (!validateUsername(username)) {
+      newErrors.username = 'Invalid username. It should only contain alphabetic characters.';
+    }
+
+    if (password && !validatePassword(password)) {
+      newErrors.password = 'Password must be at least 5 characters long.';
+    }
+
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match.';
+    }
+
+    if (newErrors.username || newErrors.password || newErrors.confirmPassword) {
+      setErrors(newErrors);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('username', username);
 
@@ -59,11 +88,11 @@ const ProfilePage = () => {
       });
 
       setProfile({ ...profile, username });
+      setErrors({ username: '', password: '', confirmPassword: '' }); // Clear errors on success
       toast.success('Profile updated successfully!');
       fetchProfile();
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile.');
     }
   };
 
@@ -86,7 +115,6 @@ const ProfilePage = () => {
   };
 
   if (loading) return <Typography>Loading...</Typography>;
-  if (error) return <Typography color="error">{error}</Typography>;
 
   return (
     <Paper style={{ padding: 20, maxWidth: 800, margin: 'auto', backgroundColor: 'transparent' }}>
@@ -115,6 +143,8 @@ const ProfilePage = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             margin="normal"
+            error={Boolean(errors.username)}
+            helperText={errors.username}
           />
           <TextField
             fullWidth
@@ -130,6 +160,8 @@ const ProfilePage = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             margin="normal"
+            error={Boolean(errors.password)}
+            helperText={errors.password}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -151,6 +183,8 @@ const ProfilePage = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             margin="normal"
+            error={Boolean(errors.confirmPassword)}
+            helperText={errors.confirmPassword}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
