@@ -117,7 +117,7 @@ const ProfilePage = () => {
   if (loading) return <Typography>Loading...</Typography>;
 
   return (
-    <Paper style={{ padding: 20, maxWidth: 800, margin: 'auto', backgroundColor: 'transparent' }}>
+    <Paper style={{ padding: 20, maxWidth: 800, margin: '80px auto', backgroundColor: 'transparent' }}> {/* Adjust margin here */}
       <Grid container spacing={3} alignItems="center">
         <Grid item xs={12} sm={4} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Avatar

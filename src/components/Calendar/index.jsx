@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
+import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
+
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { ToastContainer, toast } from 'react-toastify';
@@ -21,6 +23,8 @@ const categoryColors = {
   'Séminaire': '#e60513',
   'Formation': '#ea9901'
 };
+
+const DnDCalendar = withDragAndDrop(BigCalendar);
 
 const MyCalendar = ({ events: initialEvents }) => {
   const [isCreateEventVisible, setIsCreateEventVisible] = useState(false);
@@ -145,6 +149,52 @@ const MyCalendar = ({ events: initialEvents }) => {
     }
   };
 
+  const handleEventDrop = async ({ event, start, end }) => {
+    if (event.creator !== userEmail) {
+      toast.error('You are not authorized to move this event');
+      return;
+    }
+
+    if (moment(start).isBefore(moment().startOf('day'))) {
+      toast.error('Cannot move event to a past date');
+      return;
+    }
+
+    const updatedEvent = {
+      ...event,
+      start: start,
+      end: end,
+    };
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:3000/events/update/${event._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          startDate: start,
+          endDate: end,
+        }),
+      });
+
+      if (response.ok) {
+        setEvents((prevEvents) =>
+          prevEvents.map((e) =>
+            e._id === event._id ? { ...e, start, end } : e
+          )
+        );
+        toast.success('Event date updated successfully');
+      } else {
+        toast.error('Failed to update event date');
+      }
+    } catch (error) {
+      toast.error('Network error');
+    }
+  };
+
   const dayPropGetter = (date) => {
     const currentDate = moment().startOf('day');
     const dateToCheck = moment(date).startOf('day');
@@ -166,7 +216,7 @@ const MyCalendar = ({ events: initialEvents }) => {
 
   return (
     <div style={{ height: 500, position: 'relative' }}>
-      <BigCalendar
+      <DnDCalendar
         localizer={localizer}
         events={events}
         startAccessor="start"
@@ -176,6 +226,7 @@ const MyCalendar = ({ events: initialEvents }) => {
         selectable
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
+        onEventDrop={handleEventDrop}
         dayPropGetter={dayPropGetter}
         eventPropGetter={eventPropGetter}
       />
