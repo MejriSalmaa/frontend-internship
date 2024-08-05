@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { TextField, Avatar, Grid, Paper, Typography, Button, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
-import 'react-toastify/dist/ReactToastify.css'; // Import CSS for toast
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
@@ -17,7 +17,7 @@ const ProfilePage = () => {
   const [file, setFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState('');
 
-  const fileInputRef = React.createRef();
+  const fileInputRef = useRef();
 
   useEffect(() => {
     fetchProfile();
@@ -41,24 +41,29 @@ const ProfilePage = () => {
   };
 
   const handleUpdateProfile = async () => {
+    const formData = new FormData();
+    formData.append('username', username);
+
+    if (password) {
+      formData.append('password', password);
+    }
+
+    if (file) {
+      formData.append('profilePicture', file);
+    }
+
     try {
-      let updateData = { username };
-
-      if (password) {
-        updateData.password = password;
-      }
-
       const token = localStorage.getItem('access_token');
-      await axios.put('http://localhost:3000/users/profile/update', updateData, {
-        headers: { Authorization: `Bearer ${token}` },
+      await axios.put('http://localhost:3000/users/profile/update', formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
 
-      setProfile({ ...profile, username }); // Update profile state
-      toast.success('Profile updated successfully!'); // Show success toast
-      fetchProfile(); // Refetch profile data to ensure updates are reflected
+      setProfile({ ...profile, username });
+      toast.success('Profile updated successfully!');
+      fetchProfile();
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile.'); // Show error toast
+      toast.error('Failed to update profile.');
     }
   };
 
@@ -66,28 +71,6 @@ const ProfilePage = () => {
     const file = event.target.files[0];
     setFile(file);
     setAvatarPreview(URL.createObjectURL(file));
-  };
-
-  const handleUploadPicture = async () => {
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('profilePicture', file);
-
-    try {
-      const token = localStorage.getItem('access_token');
-      await axios.post('http://localhost:3000/users/profile/upload-picture', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      toast.success('Profile picture updated successfully!'); // Show success toast
-      fetchProfile(); // Refetch profile data to ensure updates are reflected
-    } catch (error) {
-      console.error('Error uploading profile picture:', error);
-      toast.error('Failed to upload profile picture.'); // Show error toast
-    }
   };
 
   const handleClickShowPassword = () => {
@@ -106,7 +89,7 @@ const ProfilePage = () => {
   if (error) return <Typography color="error">{error}</Typography>;
 
   return (
-    <Paper style={{ padding: 20, maxWidth: 600, margin: 'auto' }}>
+    <Paper style={{ padding: 20, maxWidth: 800, margin: 'auto', backgroundColor: 'transparent' }}>
       <Grid container spacing={3} alignItems="center">
         <Grid item xs={12} sm={4} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Avatar
@@ -121,11 +104,8 @@ const ProfilePage = () => {
             style={{ display: 'none' }}
             accept="image/*"
             onChange={handleFileChange}
-            onClick={(e) => e.stopPropagation()} // Prevent triggering click on Avatar
+            onClick={(e) => e.stopPropagation()}
           />
-          <Button variant="contained" color="secondary" onClick={handleUploadPicture} style={{ marginTop: 20 }}>
-            Upload Picture
-          </Button>
         </Grid>
         <Grid item xs={12} sm={8}>
           <Typography variant="h5">Profile Information</Typography>
@@ -190,7 +170,7 @@ const ProfilePage = () => {
           </Button>
         </Grid>
       </Grid>
-      <ToastContainer /> {/* Add this line */}
+      <ToastContainer />
     </Paper>
   );
 };
