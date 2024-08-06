@@ -18,7 +18,7 @@ import { validateEmail } from '../../utils/validation';
 
 const theme = createTheme();
 
-export default function SignIn() {
+export default function SignIn({ onSwitchToSignUp }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -168,7 +168,12 @@ export default function SignIn() {
               <Stack spacing={1} alignItems="center">
                 <Typography variant="body2">
                   Don&apos;t have an account?{' '}
-                  <Link component={RouterLink} to="/sign-up" variant="body2" underline="hover">
+                  <Link
+                    component="button"
+                    onClick={onSwitchToSignUp} // Call the function to switch to SignUp
+                    variant="body2"
+                    underline="hover"
+                  >
                     Sign Up
                   </Link>
                 </Typography>
@@ -177,7 +182,6 @@ export default function SignIn() {
           </Box>
         </Card>
       </Container>
-      
     </ThemeProvider>
   );
 }

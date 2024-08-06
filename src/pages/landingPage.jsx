@@ -3,8 +3,9 @@ import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
 import SignIn from '../components/SignIn/index';
 import SignUp from '../components/SignUp/index';
+
 const LandingPage = () => {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(true); // Default to show SignIn
   const [showSignUp, setShowSignUp] = useState(false);
 
   const handleSignInClick = () => {
@@ -15,6 +16,16 @@ const LandingPage = () => {
   const handleSignUpClick = () => {
     setShowSignUp(true);
     setShowSignIn(false);
+  };
+
+  const switchToSignUp = () => {
+    setShowSignIn(false);
+    setShowSignUp(true);
+  };
+
+  const switchToSignIn = () => {
+    setShowSignIn(true);
+    setShowSignUp(false);
   };
 
   return (
@@ -29,19 +40,19 @@ const LandingPage = () => {
         right: 0,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between', // Adjusted to space-between to distribute space
+        justifyContent: 'space-between',
       }}>    
       <Header onSignInClick={handleSignInClick} onSignUpClick={handleSignUpClick} />
       <div style={{ 
-        flexGrow: 1, // Allows this div to grow and fill available space
+        flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between', // Centers its children vertically
-        alignItems: 'center', // Centers its children horizontally
-        width: '100%', // Takes the full width of the parent
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
       }}>
-        {showSignIn && <SignIn />}
-        {showSignUp && <SignUp />}
+        {showSignIn && <SignIn onSwitchToSignUp={switchToSignUp} />}
+        {showSignUp && <SignUp onSwitchToSignIn={switchToSignIn} />}
       </div>
       <Footer />
     </div>

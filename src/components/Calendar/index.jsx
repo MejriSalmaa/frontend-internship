@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
-import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
-
+import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { ToastContainer, toast } from 'react-toastify';
@@ -36,7 +35,6 @@ const MyCalendar = ({ events: initialEvents }) => {
   const [events, setEvents] = useState([]);
   const readEventRef = useRef(null);
 
-  // Decode token and set user email
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
@@ -49,10 +47,8 @@ const MyCalendar = ({ events: initialEvents }) => {
     }
   }, []);
 
-  // Update events when initialEvents prop changes
   useEffect(() => {
     if (initialEvents) {
-      // Convert date strings to Date objects
       const updatedEvents = initialEvents.map((event) => ({
         ...event,
         start: new Date(event.startDate),
@@ -162,8 +158,8 @@ const MyCalendar = ({ events: initialEvents }) => {
 
     const updatedEvent = {
       ...event,
-      start: start,
-      end: end,
+      start,
+      end,
     };
 
     try {
@@ -186,9 +182,9 @@ const MyCalendar = ({ events: initialEvents }) => {
             e._id === event._id ? { ...e, start, end } : e
           )
         );
-        toast.success('Event date updated successfully');
+        toast.success('Event updated successfully');
       } else {
-        toast.error('Failed to update event date');
+        toast.error('Failed to update event');
       }
     } catch (error) {
       toast.error('Network error');
@@ -229,6 +225,13 @@ const MyCalendar = ({ events: initialEvents }) => {
         onEventDrop={handleEventDrop}
         dayPropGetter={dayPropGetter}
         eventPropGetter={eventPropGetter}
+        components={{
+          event: ({ event }) => (
+            <div style={{ backgroundColor: categoryColors[event.category] || '#3174ad' }}>
+              {event.title}
+            </div>
+          ),
+        }}
       />
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
       {isCreateEventVisible && (

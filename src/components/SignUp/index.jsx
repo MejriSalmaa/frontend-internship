@@ -19,7 +19,7 @@ import { validateEmail, validateUsername } from '../../utils/validation';
 
 const theme = createTheme();
 
-export default function SignUp() {
+export default function SignUp({ onSwitchToSignIn }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -247,7 +247,12 @@ export default function SignUp() {
               <Stack spacing={1} alignItems="center">
                 <Typography variant="body2">
                   Already have an account?{' '}
-                  <Link component={RouterLink} to="/sign-in" variant="body2" underline="hover">
+                  <Link
+                    component="button"
+                    onClick={onSwitchToSignIn} // Call the function to switch to SignIn
+                    variant="body2"
+                    underline="hover"
+                  >
                     Sign In
                   </Link>
                 </Typography>
