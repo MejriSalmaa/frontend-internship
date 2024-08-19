@@ -8,6 +8,7 @@ import AuthenticatedPage from './pages/AuthenticatedPage';
 import CreateEvent from './components/Event/CreateEvent';
 import ManageUser from './pages/ManageUser';
 import ProfilePage from './pages/ProfilePage';
+import ParticipationPage from './pages/ParticipationPage';
 const AppRoutes = () => {
   return (
     <Routes>
@@ -20,6 +21,7 @@ const AppRoutes = () => {
       <Route path ="/create-event" element={<CreateEvent />} />
       <Route path ="/users" element={<ManageUser />} />
       <Route path ="/profile" element={<ProfilePage />} />
+      <Route path ="/participations" element={<ParticipationPage />} />
       {/* Define other routes here */}
     </Routes>
   );

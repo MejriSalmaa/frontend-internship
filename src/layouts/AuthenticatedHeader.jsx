@@ -9,12 +9,12 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import CloseIcon from '@mui/icons-material/Close'; // Import Close icon
+import CloseIcon from '@mui/icons-material/Close';
 import TextField from '@mui/material/TextField';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
-import SearchIcon from '@mui/icons-material/Search'; // Import the magnifying glass icon
+import SearchIcon from '@mui/icons-material/Search';
 import InputAdornment from '@mui/material/InputAdornment';
 
 const logoStyle = {
@@ -23,8 +23,8 @@ const logoStyle = {
   cursor: 'pointer',
 };
 
-export default function AuthenticatedHeader({ userProfile, setFilteredEvents, setCurrentView }) { 
-   const [profileAnchorEl, setProfileAnchorEl] = useState(null);
+export default function AuthenticatedHeader({ userProfile, setFilteredEvents, setCurrentView }) {
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
   const [notificationsAnchorEl, setNotificationsAnchorEl] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -44,7 +44,7 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents, se
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('http://localhost:3000/notifications?userEmail=' + encodeURIComponent(userProfile.email), {
+      const response = await fetch(`http://localhost:3000/notifications?userEmail=${encodeURIComponent(userProfile.email)}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -52,7 +52,9 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents, se
       if (response.ok) {
         const data = await response.json();
         setNotifications(data);
-        const unreadResponse = await fetch('http://localhost:3000/notifications/unread-count?userEmail=' + encodeURIComponent(userProfile.email), {
+
+        // Fetch unread count separately
+        const unreadResponse = await fetch(`http://localhost:3000/notifications/unread-count?userEmail=${encodeURIComponent(userProfile.email)}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           },
@@ -96,8 +98,25 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents, se
     setProfileAnchorEl(event.currentTarget);
   };
 
-  const handleNotificationsMenuOpen = (event) => {
+  const handleNotificationsMenuOpen = async (event) => {
     setNotificationsAnchorEl(event.currentTarget);
+
+    // Fetch notifications and mark them as read when the menu opens
+    try {
+      const response = await fetch(`http://localhost:3000/notifications/mark-all-read?userEmail=${encodeURIComponent(userProfile.email)}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
+      if (response.ok) {
+        fetchNotifications(); // Refresh notifications and unread count
+      } else {
+        console.error('Failed to mark notifications as read');
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    }
   };
 
   const handleMenuClose = () => {
@@ -126,8 +145,8 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents, se
     }
   };
 
-  const handleNotificationClick = (notificationId) => {
-    markAsRead(notificationId);
+  const handleNotificationClick = async (notificationId) => {
+    await markAsRead(notificationId);
   };
 
   const markAsRead = async (notificationId) => {
@@ -181,9 +200,9 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents, se
       open={isProfileMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={() => setCurrentView('profile')}>Profile</MenuItem> {/* Switch to ProfilePage */}
-      <MenuItem onClick={() => setCurrentView('calendar')}>calendar</MenuItem> {/* Switch to ProfilePage */}
-
+      <MenuItem onClick={() => setCurrentView('profile')}>Profile</MenuItem>
+      <MenuItem onClick={() => setCurrentView('calendar')}>Calendar</MenuItem>
+      <MenuItem onClick={() => setCurrentView('participations')}>My Participations</MenuItem>
       <MenuItem onClick={handleLogout}>Logout</MenuItem>
     </Menu>
   );
@@ -202,7 +221,7 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents, se
         <MenuItem key={notification._id} onClick={() => handleNotificationClick(notification._id)}>
           <Typography variant="body2">{notification.message}</Typography>
           <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
-            {!notification.isRead && <IconButton size="small" onClick={() => handleNotificationClick(notification._id)}>✔️</IconButton>}
+            <IconButton size="small" onClick={() => handleNotificationClick(notification._id)}>✔️</IconButton>
             <IconButton size="small" onClick={() => handleDeclineClick(notification.eventId)}><CloseIcon /></IconButton>
           </Box>
         </MenuItem>
@@ -240,8 +259,8 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents, se
         >
           <Typography variant="h6" component="div" sx={{ display: { xs: 'none', sm: 'block' } }}>
             <img src='src/assets/logo.png' alt="logo" style={logoStyle} />
-         </Typography>
-          <Box x sx={{ display: 'flex', alignItems: 'center' }}>
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <TextField
               variant="outlined"
               placeholder="Search..."
@@ -251,16 +270,16 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents, se
                 backgroundColor: 'transparent', 
                 borderRadius: '10px',
                 '& .MuiOutlinedInput-root': {
-                  padding: '4px 8px', // Adjust padding to minimize height
-                  fontSize: '0.875rem', // Adjust font size if needed
+                  padding: '4px 8px',
+                  fontSize: '0.875rem',
                 },
                 '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'transparent', // Make the border transparent
-            },
+                  borderColor: 'transparent',
+                },
               }}
               InputProps={{
                 style: {
-                  height: '40px', // Set a specific height if needed
+                  height: '40px',
                 },
                 endAdornment: (
                   <InputAdornment position="end">
@@ -269,7 +288,8 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents, se
                     </IconButton>
                   </InputAdornment>
                 ),
-              }}            />
+              }}
+            />
             <IconButton size="large" aria-label="show new notifications" color="inherit" onClick={handleNotificationsMenuOpen}>
               <Badge badgeContent={unreadCount} color="error">
                 <NotificationsIcon />
@@ -286,7 +306,7 @@ export default function AuthenticatedHeader({ userProfile, setFilteredEvents, se
             >
               {userProfile.picture ? (
                 <img
-                  src={`http://localhost:3000${userProfile.picture}`} // Ensure the URL is correct
+                  src={`http://localhost:3000${userProfile.picture}`}
                   alt="profile"
                   style={{ width: '40px', height: '40px', borderRadius: '50%' }}
                 />
@@ -311,6 +331,5 @@ AuthenticatedHeader.propTypes = {
     role: PropTypes.string.isRequired,
   }).isRequired,
   setFilteredEvents: PropTypes.func.isRequired,
-  setCurrentView: PropTypes.func.isRequired, // Add this prop validation
-
+  setCurrentView: PropTypes.func.isRequired,
 };

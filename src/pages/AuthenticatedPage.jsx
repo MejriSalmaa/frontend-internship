@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AuthenticatedHeader from '../layouts/AuthenticatedHeader';
 import Calendar from '../components/Calendar/index';
 import ProfilePage from '../pages/ProfilePage';
-import Box from '@mui/material/Box';
+import ParticipationPage from '../pages/ParticipationPage'; // Import the ParticipationPage
 
 function AuthenticatedPage() {
   const [userProfile, setUserProfile] = useState(null);
@@ -58,8 +58,17 @@ function AuthenticatedPage() {
         justifyContent: 'space-between',
       }}
     >
-      {userProfile && <AuthenticatedHeader userProfile={userProfile} setFilteredEvents={setFilteredEvents} setCurrentView={setCurrentView} />}
-      {currentView === 'calendar' ? <Calendar events={filteredEvents} /> : <ProfilePage />}
+      {userProfile && (
+        <AuthenticatedHeader
+          userProfile={userProfile}
+          setFilteredEvents={setFilteredEvents}
+          setCurrentView={setCurrentView}
+        />
+      )}
+
+      {currentView === 'calendar' && <Calendar events={filteredEvents} />}
+      {currentView === 'profile' && <ProfilePage />}
+      {currentView === 'participations' && <ParticipationPage userProfile={userProfile} />}
     </div>
   );
 }

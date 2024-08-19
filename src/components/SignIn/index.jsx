@@ -68,7 +68,6 @@ export default function SignIn({ onSwitchToSignUp }) {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('access_token', data.access_token); // Store the token in local storage
-        alert('Login successful');
 
         window.location.href = '/AuthenticatedPage'; // Redirect to authenticatedPage
       } else {
@@ -77,7 +76,6 @@ export default function SignIn({ onSwitchToSignUp }) {
         if (errorData.message === 'User not found' || errorData.message === 'Incorrect password') {
           setInvalidEmailOrPassword(true);
         }
-        console.error('Sign in failed');
       }
     } catch (error) {
       console.error('Network error:', error);

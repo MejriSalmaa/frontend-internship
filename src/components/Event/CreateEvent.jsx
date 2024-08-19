@@ -1,29 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Card from '@mui/material/Card';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
+import {
+  Card, Box, Typography, TextField, Button, Container, Stack, MenuItem,
+  Autocomplete, Chip
+} from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Stack from '@mui/material/Stack';
-import MenuItem from '@mui/material/MenuItem';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import moment from 'moment';
 import debounce from 'lodash/debounce';
 import {
-  validateTitle,
-  validateDescription,
-  validateLocation,
-  validateDate,
-  validateStartEndDate,
-  validateParticipants,
-  validateCategory
-} from '../../utils/validation.js'; // Adjust the path as necessary
-import Autocomplete from '@mui/material/Autocomplete';
-import Chip from '@mui/material/Chip';
+  validateTitle, validateDescription, validateLocation, validateDate,
+  validateStartEndDate, validateParticipants, validateCategory
+} from '../../utils/validation.js';
 
 const theme = createTheme();
 
@@ -66,15 +55,14 @@ const CreateEvent = ({ onClose }) => {
     try {
       const encodedSearch = encodeURIComponent(search.trim());
       const url = `http://localhost:3000/users/emails/${encodedSearch}`;
-      console.log(`Fetching URL: ${url}`); // Log URL for debugging
+      console.log(`Fetching URL: ${url}`);
       const response = await fetch(url);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Failed to fetch participant suggestions:', errorData);
-      } else {
+      if (response.ok) {
         const data = await response.json();
         setItems(data.map(email => email));
+      } else {
+        console.error('Failed to fetch participant suggestions');
       }
     } catch (error) {
       console.error('Network error:', error);
@@ -125,8 +113,8 @@ const CreateEvent = ({ onClose }) => {
       description,
       category,
       location,
-      startDate: startDate.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"), // Convert to UTC and format
-      endDate: endDate.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),     // Convert to UTC and format
+      startDate: startDate.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
+      endDate: endDate.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
       participants,
     };
 
@@ -140,23 +128,23 @@ const CreateEvent = ({ onClose }) => {
         body: JSON.stringify(eventData),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Success:', result);
+
+        // Clear form
+        setTitle('');
+        setDescription('');
+        setCategory('');
+        setLocation('');
+        setStartDate(moment());
+        setEndDate(moment());
+        setParticipants([]);
+        setErrors({});
+        onClose(); // Close the form
+      } else {
+        console.error(`HTTP error! status: ${response.status}`);
       }
-
-      const result = await response.json();
-      console.log('Success:', result);
-
-      // Clear form
-      setTitle('');
-      setDescription('');
-      setCategory('');
-      setLocation('');
-      setStartDate(moment());
-      setEndDate(moment());
-      setParticipants([]);
-      setErrors({});
-      onClose(); // Close the form
     } catch (error) {
       console.error('Error:', error);
     }
@@ -288,27 +276,34 @@ const CreateEvent = ({ onClose }) => {
                 renderInput={(params) => (
                   <TextField
                     {...params}
+                    label="Add Participants by Email"
                     variant="outlined"
-                    label="Participants"
-                    placeholder="Type or select email"
+                    margin="dense"
+                    error={!!errors.participants}
+                    helperText={errors.participants}
                   />
                 )}
+                value={participants}
+                onChange={(event, newValue) => {
+                  setParticipants(newValue);
+                }}
                 onInputChange={handleOnInputChange}
-                onChange={(event, value) => setParticipants(value)}
               />
             </div>
-            <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+            <Stack direction="row" spacing={2} justifyContent="space-between">
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
+                sx={{ mt: 3, mb: 2 }}
               >
                 Create Event
               </Button>
               <Button
-                fullWidth
-                variant="contained"
                 onClick={handleCancel}
+                fullWidth
+                variant="outlined"
+                sx={{ mt: 3, mb: 2 }}
               >
                 Cancel
               </Button>

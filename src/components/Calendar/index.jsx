@@ -94,11 +94,14 @@ const MyCalendar = ({ events: initialEvents }) => {
     };
   }, [handleClickOutside]);
 
-  const handleCloseCreateEvent = () => {
+  const handleCloseCreateEvent = (newEvent) => {
+    if (newEvent) {
+      setEvents((prevEvents) => [...prevEvents, newEvent]);
+    }
     setIsCreateEventVisible(false);
     setSelectedDate(null);
   };
-
+  
   const handleCloseEventUpdate = () => {
     setIsEventUpdateVisible(false);
     setSelectedEvent(null);
